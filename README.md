@@ -9,7 +9,7 @@
 </div>
 
 ## About
-shinyDE currently supports the following differential expression (DE) callers: edgeR, DESeq2, baySeq, NOISeq, SAMSeq, DEGseq, EBSeq, and PoissonSeq.  Users can run multiple DE callers in parallel and observe mutual overlaps (i.e., results called in common between, e.g., edgeR and DESeq2, which can then further be sorted by p-value, FDR, etc.).  shinyDE also supports heatmaps, gene ontology (GO) analyses, and Venn diagrams.    
+`shinyDE` currently supports the following differential expression (DE) callers: edgeR, DESeq2, baySeq, NOISeq, SAMSeq, DEGseq, EBSeq, and PoissonSeq.  Users can run multiple DE callers in parallel and observe mutual overlaps (i.e., results called in common between, e.g., edgeR and DESeq2, which can then further be sorted by p-value, FDR, etc.).  `shinyDE` also supports heatmaps, gene ontology (GO) analyses, and Venn diagrams.    
 
 ## Screenshots
 <div align="center">
