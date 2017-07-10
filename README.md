@@ -2,7 +2,7 @@
 
 # shinyDE
 
-<img src="https://user-images.githubusercontent.com/9893806/27998794-a919344c-64e2-11e7-97f8-927fedd22770.png">
+<img src="https://user-images.githubusercontent.com/9893806/28036593-b941bcb4-6586-11e7-8036-6c48ef51323f.png">
 
 ##### Web server for all differential expression (DE) callers
 
