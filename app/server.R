@@ -203,7 +203,8 @@ shinyServer(function(input, output, session) {
 
   })
 
-
+  #HEATMAP
+  #output here
   output$BrainSpan_Heatmap <- renderPlot({
     bstable2 <- BT()
 
