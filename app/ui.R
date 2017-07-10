@@ -6,11 +6,11 @@ shinyUI(pageWithSidebar(
 
   sidebarPanel(
     tags$div(),
-    
-    
+
+
     #radioButtons("dist", "DE Method : ", c("edgeR"="edgeR", "DESeq"="DESeq", "baySeq"="baySeq", "ALL"="ALL")),
     checkboxGroupInput("differential_callers", label=h4("DE Callers:"), choices = list("edgeR" = "edgeR", "DESeq2" = "DESeq2", "baySeq" = "baySeq", "NOISeq" = "NOISeq", "SAMSeq" = "SAMSeq", "DEGseq" = "DEGSeq", "EBSeq" = "EBSeq", "PoissonSeq" = "PoissonSeq")),
-    
+
     fileInput('file1', 'Choose matrix count file to upload:',
                 accept = c(
                   'text/csv',
@@ -21,7 +21,7 @@ shinyUI(pageWithSidebar(
                   '.tsv'
                 )
       ),
-    
+
 
     actionButton("do", "Run Query"),
     tags$br(),
@@ -29,7 +29,7 @@ shinyUI(pageWithSidebar(
     tags$br(),
     tags$br(),
     img(src = "UM.png", width="400px", height="75px")
-    
+
   ),
 
   mainPanel(
@@ -38,5 +38,3 @@ shinyUI(pageWithSidebar(
   )
 
 ))
-
-
