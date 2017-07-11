@@ -2,6 +2,9 @@ library(shiny)
 library(gplots)
 library(dplyr)
 library(edgeR)
+library(DESeq2)
+library(EBSeq)
+library(baySeq)
 
 gtex_table <- c(1,1,1)
 bs_table <- c(0)
@@ -99,6 +102,78 @@ shinyServer(function(input, output, session) {
       edgerFiltered <<- m[gene_list,]
       gtex_table <<- ymerged3
     })}
+
+    if ('DESeq2' %in% input$differential_callers) {
+    withProgress(message = "Running DESeq2", value = NULL, {
+      df <- x[-1,]
+      groups<-head(x,1)
+      groups_matrix<-as.matrix(groups)
+      gmat<-replace(groups_matrix, groups_matrix==0, "untreated")
+      gmat<-replace(gmat, gmat==1, "treated")
+      ltype<-replace(gmat, gmat=="treated", "paired-end")
+      ltype<-replace(ltype, ltype=="untreated", "paired-end")
+      pasillaDesign=data.frame(row.names=colnames(df), condition = as.vector(gmat), lib = as.vector(ltype))
+      pairedSamples = pasillaDesign$libType == "paired-end"
+      countTable = df[ , pairedSamples ]
+      condition = pasillaDesign$condition[ pairedSamples ]
+      condition = factor(as.vector(gmat))
+      dds<-DESeqDataSetFromMatrix(countData=df, colData=pasillaDesign, design = ~condition)
+      dds<-DESeq(dds)
+      res = results(dds)
+      normalizedCounts <- counts(dds, normalized=TRUE)
+      ymerged = merge(df, normalizedCounts, by.x = 0, by.y = 0, all.x=T, all.y=T)
+      colnames(ymerged)[1]<-"temp"
+      yfinal = merge(annotation, ymerged, by.x="Ensembl", by.y="temp", all.x=T, all.y=T)
+      res2<-as.data.frame(res)
+      yexport = merge(yfinal, res2, by.x="Ensembl", by.y=0, all.x=T, all.y=T)
+      #gtex_table <<- yexport
+    })}
+
+    if ('EBSeq' %in% input$differential_callers) {
+    withProgress(message = "Running EBSeq", value = NULL, {
+      Sizes=MedianNorm(x)
+      all <- x[-1,]
+      g2 <- head(x, 1)
+      g2 <- g2[-1]
+      g2_mat <- as.matrix(g2)
+      colnames(g2_mat) <- NULL
+      grp <- as.vector(g2_mat)
+      grp1 = replace(grp, grp == 1, 2)
+      grp2 = replace(grp1, grp1 == 0, 1)
+      myfactor=as.factor(grp2)
+      EBOut=EBTest(Data=as.matrix(x), Conditions=myfactor, sizeFactors=Sizes, maxround=5)
+      eb_matrix<-EBOut$PPMat
+      ymerged=merge(annotation, eb_matrix, by.x="Ensembl", by.y=0, all.x=T, all.y=T)
+    })}
+
+    if ('baySeq' %in% input$differential_callers) {
+    withProgress(message = "Running baySeq", value = NULL, {
+      all<-x[-1,]
+      g2<-head(x,1)
+      g2<-g2[-1]
+      g2_mat<-as.matrix(g2)
+      colnames(g2_mat)<-NULL
+      grp<-as.vector(g2_mat)
+      grp1=replace(grp, grp==1, 2)
+      grp2=replace(grp1, grp1==0, 1)
+      rep1=replace(grp2, grp2==2, 1)
+      replicates=list(NDE=rep1, DE=grp2)
+      cname <- all[,1]
+      all <- all[,-1]
+      all = as.matrix(all)
+      CD<-new("countData", data=all, replicates=grp2, groups=replicates)
+      libsizes(CD) <- getLibsizes(CD)
+      CD@annotation <- as.data.frame(cname)
+      cl <- makeCluster(8)
+      CDP.NBML <- getPriors.NB(CD, samplesize = 1000, estimation = "QL", cl = cl)
+      CDPost.NBML <- getLikelihoods.NB(CDP.NBML, pET = 'BIC', cl = cl)
+      topCounts(CDPost.NBML, group=2)
+      NBML.TPs <- getTPs(CDPost.NBML, group=2, TPs = 1:100)
+      bayseq_de = topCounts(CDPost.NBML, group=2, number=60000)
+      ymerged=merge(annotation,bayseq_de, by.x="Ensembl", by.y="annotation", all.x=T, all.y=T)
+    })}
+
+
   })
 
   GT <- reactive({
