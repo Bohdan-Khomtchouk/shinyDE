@@ -5,6 +5,8 @@ library(edgeR)
 library(DESeq2)
 library(EBSeq)
 library(baySeq)
+library(PoissonSeq)
+library(DEGseq)
 
 gtex_table <- c(1,1,1)
 bs_table <- c(0)
@@ -171,6 +173,37 @@ shinyServer(function(input, output, session) {
       NBML.TPs <- getTPs(CDPost.NBML, group=2, TPs = 1:100)
       bayseq_de = topCounts(CDPost.NBML, group=2, number=60000)
       ymerged=merge(annotation,bayseq_de, by.x="Ensembl", by.y="annotation", all.x=T, all.y=T)
+    })}
+
+    if ('PoissonSeq' %in% input$differential_callers) {
+    withProgress(message = "Running PoissonSeq", value = NULL, {
+      grp1 <- head(x, 1)
+      grp2 <- grp1[,-1]
+      z <- x[-1,]
+      gname <- z[,1]
+      n <- as.matrix(z[,-1])
+      type = "twoclass"
+      pair <- TRUE
+      y <- grp2 + 1
+      y2 <- unlist(y)
+      dat <- list(n = n, y = y2, type = type, pair = pair, gname = gname)
+      res <- PS.Main(dat = dat)
+    })}
+
+    if ('DEGseq' %in% input$differential_callers) {
+    withProgress(message = "Running DEGseq", value = NULL, {
+      count_matrix2 <- x[-1,]
+      g1 <- head(x, 1)
+      j = 1
+      i = length(g1)
+      c1 <- c()
+      c2 <- c()
+      while (j <= i) {
+        if (g1[j] == 0) { c1 <- c(c1, j) }
+        if (g1[j] == 1) { c2 <- c(c2, j) }
+        j = j + 1
+      }
+      DEGexp(geneExpMatrix1 = count_matrix2, geneCol1 = 1, expCol1 = c1, groupLabel1 = "group1", geneExpMatrix2 = count_matrix2, geneCol2 = 1, expCol2 = c2, groupLabel2 = "group2", method = "MARS", outputDir = "./")
     })}
 
 
