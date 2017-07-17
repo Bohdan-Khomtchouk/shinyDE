@@ -89,12 +89,29 @@ write.csv(ymerged, file="BaySeq_results.txt")
 if (args[3] == "ALL") {
 library(samr)
 #some of the data will be taken from edgeR
+z <- x[-1,]
+groups <- head(x, 1)
+groups_matrix <- as.matrix(groups)
+group <- factor(groups_matrix)
+y <- DGEList(counts = z, group = group)
+y <- calcNormFactors(y)
+y <- estimateCommonDisp(y)
+y <- estimateTagwiseDisp(y)
+et <- exactTest(y)
+detags <- rownames(topTags(et, n = 22000))
+results <- topTags(et, n = 60000)
 # group data will be taken from bayseq
+all<-x[-1,]
+g2<-head(x,1)
+g2<-g2[-1]
+g2_mat<-as.matrix(g2)
+colnames(g2_mat)<-NULL
+grp<-as.vector(g2_mat)
+grp1=replace(grp, grp==1, 2)
+grp2=replace(grp1, grp1==0, 1)
 matrix_u<-y$pseudo.counts
-#need to intger that up a little bit ERRRRRRRRRRRRROR
 matrix_rounded=round(matrix_u,0)
 samfit<-SAMseq(matrix_rounded, grp2, resp.type="Two class unpaired")
-#NEEDS WORK AS TO HOW TO OUTPUT THE # OF DIFFERENTIAL GENES!
 ymerged=merge(annotation, samfit, by.x="Ensembl", by.y="Gene Name", all.x=T, all.y=T)
 write.csv(ymerged, file="SAMSeq_results.txt")
 }
